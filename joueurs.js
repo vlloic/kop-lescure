@@ -48,4 +48,11 @@ const JOUEURS = [
   // Génération Ligue 2 (2022–2024)
   { id: "barbet",     nom: "Yoann Barbet",       poste: "Défenseur", epoque: "années 2020" },
   { id: "mwanga",     nom: "Junior Mwanga",      poste: "Milieu",    epoque: "années 2020" },
+  { id: "weissbeck",  nom: "Gaëtan Weissbeck",   poste: "Milieu",    epoque: "années 2020" },
+  { id: "pedrodiaz",  nom: "Pedro Díaz",         poste: "Milieu",    epoque: "années 2020" },
+  { id: "maja",       nom: "Josh Maja",          poste: "Attaquant", epoque: "années 2020" },
+  { id: "vipotnik",   nom: "Zan Vipotnik",       poste: "Attaquant", epoque: "années 2020" },
+  { id: "bakwa",      nom: "Dilane Bakwa",       poste: "Attaquant", epoque: "années 2020" },
+  { id: "davitashvili", nom: "Zuriko Davitashvili", poste: "Attaquant", epoque: "années 2020" },
+  { id: "elis",       nom: "Alberth Elis",       poste: "Attaquant", epoque: "années 2020" },
 ];
