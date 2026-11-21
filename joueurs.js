@@ -27,11 +27,16 @@ const JOUEURS = [
   { id: "mavuba",     nom: "Rio Mavuba",         poste: "Milieu",    epoque: "années 2000" },
   { id: "chalme",     nom: "Mathieu Chalmé",     poste: "Défenseur", epoque: "années 2000–2010" },
   { id: "diawara",    nom: "Souleymane Diawara", poste: "Défenseur", epoque: "années 2000–2010" },
+  { id: "jurietti",   nom: "Franck Jurietti",    poste: "Défenseur", epoque: "années 2000" },
+  { id: "menegazzo",  nom: "Fernando Menegazzo", poste: "Milieu",    epoque: "années 2000–2010" },
+  { id: "obertan",    nom: "Gabriel Obertan",    poste: "Attaquant", epoque: "2008–2009" },
+  { id: "tremoulinas",nom: "Benoît Trémoulinas", poste: "Défenseur", epoque: "années 2000–2010" },
   { id: "bellion",    nom: "David Bellion",      poste: "Attaquant", epoque: "années 2000–2010" },
   // Années 2010–2020
   { id: "mariano",    nom: "Mariano",            poste: "Défenseur", epoque: "années 2010" },
   { id: "kamano",     nom: "François Kamano",    poste: "Attaquant", epoque: "années 2010" },
   { id: "otavio",     nom: "Otávio",             poste: "Milieu",    epoque: "années 2010–2020" },
+  { id: "mauricebelay", nom: "Nicolas Maurice-Belay", poste: "Milieu", epoque: "années 2010" },
   { id: "adli",       nom: "Yacine Adli",        poste: "Milieu",    epoque: "années 2020" },
   { id: "toulalan",   nom: "Jérémy Toulalan",    poste: "Milieu",    epoque: "années 2010" },
   { id: "obraniak",   nom: "Ludovic Obraniak",   poste: "Milieu",    epoque: "années 2010" },
@@ -40,4 +45,6 @@ const JOUEURS = [
   { id: "costil",     nom: "Benoît Costil",      poste: "Gardien",   epoque: "2017–2022" },
   { id: "koscielny",  nom: "Laurent Koscielny",  poste: "Défenseur", epoque: "2019–2022" },
   { id: "hwang",      nom: "Hwang Ui-jo", court: "Hwang",        poste: "Attaquant", epoque: "2019–2022" },
+  // Génération Ligue 2 (2022–2024)
+  { id: "mwanga",     nom: "Junior Mwanga",      poste: "Milieu",    epoque: "années 2020" },
 ];

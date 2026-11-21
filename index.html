@@ -259,6 +259,24 @@
     return { trie: [ids[0]], aPlacer: ids.slice(1), lo: 0, hi: 1, histo: [] };
   }
   const cleEtat = () => "etat:" + moi;
+  // reprend la partie sauvegardée et l'adapte si la liste des joueurs a changé
+  function chargerEtat() {
+    const e = store.get(cleEtat(), null);
+    if (!e) return nouvelEtat();
+    const existe = id => PAR_ID[id];
+    const avant = e.trie.length + e.aPlacer.length;
+    e.trie = e.trie.filter(existe); e.aPlacer = e.aPlacer.filter(existe);
+    const connus = new Set([...e.trie, ...e.aPlacer]);
+    const nouveaux = JOUEURS.map(j => j.id).filter(id => !connus.has(id));
+    if (nouveaux.length || e.trie.length + e.aPlacer.length !== avant) {
+      e.aPlacer.push(...nouveaux.sort(() => Math.random() - .5));
+      if (!e.trie.length && e.aPlacer.length) e.trie.push(e.aPlacer.shift());
+      e.lo = 0; e.hi = e.trie.length; e.histo = [];
+      store.set(cleEtat(), e);
+      if (nouveaux.length) setTimeout(() => toast(`${nouveaux.length} nouveaux joueurs à placer ⚽️`), 600);
+    }
+    return e;
+  }
   let etat = null;
 
   function estimationRestante(e) {
@@ -628,7 +646,7 @@
 
   function choisirUser(u) {
     moi = u; store.set("moi", u);
-    etat = store.get(cleEtat(), null) || nouvelEtat();
+    etat = chargerEtat();
     store.set(cleEtat(), etat);
     vue(classements[moi] && !etat.aPlacer.length ? "moi" : "duel");
   }
@@ -642,7 +660,7 @@
   let importe = false;
   if (location.hash.includes("c=")) { importe = importer(location.hash); history.replaceState(null, "", location.pathname + location.search); }
   if (moi && USERS.includes(moi)) {
-    etat = store.get(cleEtat(), null) || nouvelEtat();
+    etat = chargerEtat();
     vue(importe ? "commun" : (etat.aPlacer.length ? "duel" : "moi"));
   } else vue("qui");
 
