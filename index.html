@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KOP Lescure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --marine: #14234b;
+    --marine-2: #1f3366;
+    --blanc: #ffffff;
+    --creme: #f3f1ea;
+    --texte: #14234b;
+    --doux: #5b6584;
+    --accent: #c9a227;
+    --vert: #2e8b57;
+    --rouge: #b3343a;
+    --carte: #ffffff;
+    --bord: #d9dce6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--creme);
+    color: var(--texte);
+    font-family: Inter, system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    background: var(--marine);
+    color: var(--blanc);
+    position: relative;
+    overflow: hidden;
+    padding: 18px 16px 34px;
+    text-align: center;
+  }
+  .scap { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  header > *:not(.scap) { position: relative; }
+  h1 { font-family: Oswald, sans-serif; font-weight: 700; letter-spacing: .5px; margin: 0; font-size: 26px; text-transform: uppercase; }
+  .sous { opacity: .75; font-size: 13px; margin-top: 4px; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+  h2 { font-family: Oswald, sans-serif; text-transform: uppercase; font-size: 20px; margin: 8px 0 14px; }
+  nav { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; position: relative; z-index: 1; }
+  nav button { background: transparent; color: var(--blanc); border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 6px 14px; font: 600 13px Inter, sans-serif; cursor: pointer; }
+  nav button.actif { background: var(--blanc); color: var(--marine); }
+  .btn { background: var(--marine); color: var(--blanc); border: none; border-radius: 10px; padding: 12px 18px; font: 600 15px Inter, sans-serif; cursor: pointer; }
+  .btn.sec { background: transparent; color: var(--marine); border: 2px solid var(--marine); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .ligne { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .users { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .user {
+    background: var(--carte); border: 2px solid var(--bord); border-radius: 14px; padding: 18px 8px; text-align: center; cursor: pointer;
+    font: 700 20px Oswald, sans-serif; text-transform: uppercase; color: var(--marine);
+  }
+  .user:hover { border-color: var(--marine); }
+  .user small { display: block; font: 400 12px Inter, sans-serif; color: var(--doux); text-transform: none; margin-top: 6px; }
+  .duel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: stretch; }
+  .vs { align-self: center; font: 700 22px Oswald, sans-serif; color: var(--doux); }
+  .joueur {
+    background: var(--marine); color: var(--blanc); border: none; border-radius: 16px; padding: 22px 10px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 210px; justify-content: center;
+    transition: transform .08s ease;
+    font-family: Inter, sans-serif;
+  }
+  .joueur:hover { transform: translateY(-2px); background: var(--marine-2); }
+  .joueur:active { transform: scale(.97); }
+  .avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--blanc); color: var(--marine); display: grid; place-items: center; font: 700 26px Oswald, sans-serif; }
+  .nom { font: 700 19px Oswald, sans-serif; text-transform: uppercase; text-align: center; line-height: 1.15; }
+  .meta { font-size: 12px; opacity: .75; text-align: center; }
+  .barre { height: 10px; background: var(--bord); border-radius: 999px; overflow: hidden; margin: 6px 0 4px; }
+  .barre > div { height: 100%; background: var(--accent); transition: width .2s; }
+  .petit { font-size: 13px; color: var(--doux); }
+  .carte { background: var(--carte); border: 1px solid var(--bord); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  ol.classement { margin: 0; padding: 0; list-style: none; }
+  ol.classement li { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--bord); }
+  ol.classement li:last-child { border-bottom: none; }
+  .rang { width: 30px; text-align: right; font: 700 18px Oswald, sans-serif; color: var(--doux); flex: none; }
+  .top .rang { color: var(--accent); }
+  .lnom { flex: 1; min-width: 0; font-weight: 600; }
+  .lnom small { display: block; font-weight: 400; color: var(--doux); font-size: 12px; }
+  .score { font-size: 12px; color: var(--doux); text-align: right; flex: none; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--creme); border: 1px solid var(--bord); }
+  .chip.ok { background: #e3f2e9; border-color: #b6dcc5; }
+  textarea, input[type=text] { width: 100%; border: 1px solid var(--bord); border-radius: 10px; padding: 10px; font: 13px ui-monospace, monospace; background: var(--blanc); color: var(--texte); }
+  .fun h3 { font: 700 16px Oswald, sans-serif; text-transform: uppercase; margin: 0 0 6px; }
+  .grand { font: 700 22px Oswald, sans-serif; }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--marine); color: var(--blanc); padding: 10px 18px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 10; }
+  .toast.on { opacity: 1; }
+  .cache { display: none !important; }
+  /* ---------- animations ---------- */
+  .duel { position: relative; }
+  .joueur { position: relative; overflow: hidden; }
+  .joueur.gagne { animation: gagne .7s ease both; box-shadow: 0 0 0 4px var(--accent), 0 10px 30px rgba(201,162,39,.5); z-index: 2; }
+  .joueur.perd { animation: perd .7s ease-in both; filter: grayscale(1); }
+  .joueur.entre { animation: entre .45s cubic-bezier(.2,1.4,.4,1) both; }
+  .joueur.reste { animation: reste .45s ease both; }
+  .joueur.bloque { pointer-events: none; }
+  @keyframes gagne { 0%{transform:scale(1)} 30%{transform:scale(1.1) rotate(-2deg)} 55%{transform:scale(1.04) rotate(1deg)} 100%{transform:scale(1.06)} }
+  @keyframes perd { 0%{transform:none;opacity:1} 25%{transform:translateX(-6px) rotate(-2deg)} 40%{transform:translateX(6px) rotate(2deg)} 100%{transform:translateY(40px) rotate(8deg) scale(.85);opacity:.15} }
+  @keyframes entre { from{transform:translateY(-30px) scale(.6) rotate(-6deg);opacity:0} to{transform:none;opacity:1} }
+  @keyframes reste { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+  .tampon { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-14deg) scale(2.4); opacity: 0;
+    font: 700 30px Oswald, sans-serif; letter-spacing: 2px; padding: 2px 14px; border: 4px solid; border-radius: 8px; animation: tampon .35s .08s ease-out forwards; pointer-events: none; z-index: 3; }
+  .tampon.out { color: #ff6b6b; border-color: #ff6b6b; background: rgba(20,35,75,.85); }
+  .tampon.ok { color: var(--accent); border-color: var(--accent); background: rgba(20,35,75,.85); }
+  @keyframes tampon { to { transform: translate(-50%,-50%) rotate(-14deg) scale(1); opacity: 1; } }
+  .vs { animation: vs 1.6s ease-in-out infinite; }
+  @keyframes vs { 50% { transform: scale(1.25); color: var(--accent); } }
+  .reaction { min-height: 58px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+  .reaction .r1 { font: 700 19px Oswald, sans-serif; color: var(--marine); }
+  .reaction .r2 { font-size: 13px; color: var(--doux); margin-top: 2px; }
+  .reaction.pop { animation: pop .4s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  .confetti { position: fixed; width: 9px; height: 14px; z-index: 20; pointer-events: none; border-radius: 2px;
+    animation: confetti var(--t, 1.1s) cubic-bezier(.2,.6,.4,1) forwards; }
+  @keyframes confetti { to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; } }
+  .banniere { position: fixed; inset: 0; display: grid; place-items: center; z-index: 15; pointer-events: none; }
+  .banniere div { background: var(--marine); color: var(--blanc); border: 4px solid var(--blanc); outline: 4px solid var(--marine);
+    padding: 18px 26px; border-radius: 16px; text-align: center; font: 700 30px Oswald, sans-serif; text-transform: uppercase;
+    animation: banniere 1.9s ease forwards; max-width: calc(100vw - 32px); }
+  .banniere small { display: block; font: 400 15px Inter, sans-serif; text-transform: none; opacity: .85; margin-top: 4px; }
+  @keyframes banniere { 0%{transform:scale(.2) rotate(-8deg);opacity:0} 15%{transform:scale(1.08) rotate(2deg);opacity:1} 25%{transform:scale(1) rotate(0)} 80%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.15)} }
+  .son { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    .joueur.gagne, .joueur.perd, .joueur.entre, .joueur.reste, .vs, .reaction.pop, .banniere div { animation-duration: .01s !important; }
+    .vs { animation: none; }
+  }
+  @media (max-width: 520px) {
+    .duel { grid-template-columns: 1fr; }
+    .vs { text-align: center; }
+    .joueur { min-height: 150px; flex-direction: row; justify-content: flex-start; padding: 16px; }
+    .joueur .txt { text-align: left; }
+    .joueur .nom, .joueur .meta { text-align: left; }
+    .users { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <svg class="scap" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L200 110 L400 0" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="22"/></svg>
+  <h1>KOP Lescure</h1>
+  <div class="sous">Le classement officieux des Girondins · Loïc, Pierre & Patrick-Abdou</div>
+  <nav id="nav" class="cache">
+    <button data-vue="duel">Duels</button>
+    <button data-vue="moi">Mon classement</button>
+    <button data-vue="commun">Classement commun</button>
+    <button data-vue="fun">Le vestiaire</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Choix de l'utilisateur -->
+  <section id="v-qui" class="cache">
+    <h2>T'es qui ?</h2>
+    <div class="users" id="users"></div>
+  </section>
+
+  <!-- Duels -->
+  <section id="v-duel" class="cache">
+    <div class="ligne" style="justify-content:space-between">
+      <h2 id="duel-titre">Qui tu préfères ?</h2>
+      <span class="ligne" style="gap:4px"><span class="petit" id="qui-suis-je"></span><button class="son" id="son" title="Son">🔊</button></span>
+    </div>
+    <div class="barre"><div id="prog"></div></div>
+    <div class="petit" id="prog-txt"></div>
+    <div class="reaction" id="reaction"><div class="r1">Que le meilleur gagne ⚔️</div></div>
+    <div class="duel" id="duel">
+      <button class="joueur" id="jA"></button>
+      <div class="vs">VS</div>
+      <button class="joueur" id="jB"></button>
+    </div>
+    <div style="height:16px"></div>
+    <div class="ligne">
+      <button class="btn sec" id="annuler">↩︎ Annuler le dernier choix</button>
+      <button class="btn sec" id="recommencer">Tout recommencer</button>
+    </div>
+    <div id="fini" class="carte cache" style="margin-top:16px">
+      <div class="grand">Classement terminé ✅</div>
+      <p>Envoie ton lien aux copains pour qu'ils l'ajoutent au classement commun.</p>
+      <button class="btn" data-go="moi">Voir mon classement</button>
+    </div>
+  </section>
+
+  <!-- Mon classement -->
+  <section id="v-moi" class="cache">
+    <h2 id="moi-titre">Mon classement</h2>
+    <div class="carte">
+      <div class="ligne">
+        <button class="btn" id="partager">📤 Copier mon lien de partage</button>
+      </div>
+      <p class="petit" style="margin-bottom:0">Colle ce lien dans le groupe KOP Lescure. Quand un pote l'ouvre, ton classement s'ajoute automatiquement chez lui.</p>
+    </div>
+    <div class="carte"><ol class="classement" id="moi-liste"></ol></div>
+  </section>
+
+  <!-- Commun -->
+  <section id="v-commun" class="cache">
+    <h2>Classement commun</h2>
+    <div class="carte">
+      <div class="chips" id="dispo"></div>
+      <p class="petit">Moyenne des rangs de chacun. Il manque un pote ? Demande-lui son lien, ou colle-le ici :</p>
+      <div class="ligne">
+        <input type="text" id="coller" placeholder="Colle un lien de partage…">
+        <button class="btn" id="importer">Ajouter</button>
+      </div>
+    </div>
+    <div class="carte"><ol class="classement" id="commun-liste"></ol></div>
+  </section>
+
+  <!-- Fun -->
+  <section id="v-fun" class="cache fun">
+    <h2>Le vestiaire</h2>
+    <div id="fun-contenu"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="joueurs.js"></script>
+<script>
+(() => {
+  const USERS = ["Loïc", "Pierre", "Patrick-Abdou"];
+  const ABR = { "Loïc": "L", "Pierre": "Pi", "Patrick-Abdou": "PA" };
+  const PAR_ID = Object.fromEntries(JOUEURS.map(j => [j.id, j]));
+  const $ = id => document.getElementById(id);
+
+  // ---------- stockage (localStorage tolérant aux erreurs) ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("gdb:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("gdb:" + k, JSON.stringify(v)); } catch {} },
+    del(k) { try { localStorage.removeItem("gdb:" + k); } catch {} }
+  };
+
+  let moi = store.get("moi", null);
+  // classements de tout le monde : { "Loïc": [ids...], ... }
+  let classements = store.get("classements", {});
+
+  // ---------- tri par duels (insertion binaire = peu de duels) ----------
+  // état : { aPlacer: [ids], trie: [ids], lo, hi, histo: [] }
+  function nouvelEtat() {
+    const ids = JOUEURS.map(j => j.id);
+    for (let i = ids.length - 1; i > 0; i--) { const r = Math.floor(Math.random() * (i + 1)); [ids[i], ids[r]] = [ids[r], ids[i]]; }
+    return { trie: [ids[0]], aPlacer: ids.slice(1), lo: 0, hi: 1, histo: [] };
+  }
+  const cleEtat = () => "etat:" + moi;
+  let etat = null;
+
+  function estimationRestante(e) {
+    // duels restants ≈ duels pour le joueur en cours + log2 pour les suivants
+    let n = Math.ceil(Math.log2(Math.max(1, e.hi - e.lo + 1)));
+    let taille = e.trie.length + 1;
+    for (let i = 1; i < e.aPlacer.length; i++, taille++) n += Math.ceil(Math.log2(taille + 1));
+    return n;
+  }
+
+  // ---------- le fun : sons, confettis, commentaires ----------
+  let sonOn = store.get("son", true);
+  const majSon = () => $("son").textContent = sonOn ? "🔊" : "🔇";
+  majSon();
+  $("son").onclick = () => { sonOn = !sonOn; store.set("son", sonOn); majSon(); };
+  let ac;
+  function bip(freq, dur, type = "sine", vol = .15, delai = 0, glisse) {
+    if (!sonOn) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const t = ac.currentTime + delai, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, t);
+      if (glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + dur);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur);
+    } catch {}
+  }
+  const sons = {
+    clic: () => { bip(520, .12, "triangle", .18, 0, 900); },
+    sifflet: (n = 1) => { for (let i = 0; i < n; i++) { bip(2300, .22, "square", .05, i * .3); bip(2450, .22, "square", .04, i * .3); } },
+    fanfare: () => [523, 659, 784, 1047].forEach((f, i) => bip(f, .25, "triangle", .14, i * .11)),
+    chute: () => bip(300, .35, "sawtooth", .05, .05, 90),
+  };
+  const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function confettis(x, y, n = 24, force = 1) {
+    if (calme) return;
+    const couleurs = ["#14234b", "#ffffff", "#c9a227", "#1f3366"];
+    for (let i = 0; i < n; i++) {
+      const c = document.createElement("span"); c.className = "confetti";
+      const a = Math.random() * Math.PI * 2, v = (80 + Math.random() * 180) * force;
+      c.style.left = x + "px"; c.style.top = y + "px";
+      c.style.background = couleurs[i % couleurs.length];
+      c.style.border = "1px solid rgba(20,35,75,.3)";
+      c.style.setProperty("--dx", Math.cos(a) * v + "px");
+      c.style.setProperty("--dy", Math.sin(a) * v + 160 * force + "px");
+      c.style.setProperty("--rot", (Math.random() * 720 - 360) + "deg");
+      c.style.setProperty("--t", (0.9 + Math.random() * .7) * (force > 1 ? 1.6 : 1) + "s");
+      document.body.appendChild(c); setTimeout(() => c.remove(), 2800);
+    }
+  }
+  function pluieConfettis() {
+    for (let k = 0; k < 6; k++) setTimeout(() => confettis(Math.random() * innerWidth, -10, 30, 2), k * 180);
+  }
+  function banniere(titre, sous) {
+    const b = document.createElement("div"); b.className = "banniere";
+    b.innerHTML = `<div>${titre}${sous ? `<small>${sous}</small>` : ""}</div>`;
+    document.body.appendChild(b); setTimeout(() => b.remove(), 2000);
+  }
+  const hasard = t => t[Math.floor(Math.random() * t.length)];
+  const PHRASES = {
+    generique: [
+      "{g} envoie {p} sur le banc 🪑", "{p} file directement au vestiaire 🚿", "Carton rouge pour {p} 🟥",
+      "{g}, c'est la classe ✨", "Pas photo. {g}. 💪", "{p} retourne en réserve 😬",
+      "{g} met tout le monde d'accord", "Le KOP Lescure se lève pour {g} 🙌", "Ça sent le Ballon d'Or pour {g}",
+      "{p} : remplacé à la 12e minute", "Aïe aïe aïe pour {p}", "Allez Bordeaux ! Allez {g} !", "Le KOP Lescure chante pour {g} 🎶", "{p} sifflé par tout le KOP 😤",
+    ],
+    Attaquant: ["{g} la met au fond ⚽️", "Lucarne de {g} 🎯", "{g} plante encore 🔥"],
+    Milieu: ["{g} dicte le tempo 🎼", "Petit pont de {g} sur {p} 😮", "{g} orchestre tout"],
+    Défenseur: ["{g} : ça ne passe pas 🧱", "Tacle propre de {g} sur {p}", "{g} verrouille la défense 🔒"],
+    Gardien: ["Arrêt décisif de {g} 🧤", "{g} sort le grand jeu 🧤", "Mur infranchissable : {g}"],
+  };
+  const nomCourt = j => j.court || (j.nom.split(" ").length > 1 ? j.nom.split(" ").slice(1).join(" ") : j.nom);
+  function phrase(g, p) {
+    const pool = PHRASES.generique.concat(PHRASES[g.poste] || [], PHRASES[g.poste] || []);
+    return hasard(pool).replace(/\{g\}/g, nomCourt(g)).replace(/\{p\}/g, nomCourt(p));
+  }
+  function reagir(r1, r2) {
+    const el = $("reaction");
+    el.innerHTML = `<div class="r1">${r1}</div>${r2 ? `<div class="r2">${r2}</div>` : ""}`;
+    el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+  }
+
+  let occupe = false, serie = 0, serieDe = null;
+  function clic(gagnantId, btnG, btnP) {
+    if (occupe) return; occupe = true;
+    const e = etat, nouveau = e.aPlacer[0];
+    const mid = Math.floor((e.lo + e.hi) / 2);
+    const g = PAR_ID[gagnantId], p = PAR_ID[gagnantId === nouveau ? e.trie[mid] : nouveau];
+    const pctAvant = e.trie.length / JOUEURS.length;
+    if (serieDe !== nouveau) { serie = 0; serieDe = nouveau; }
+    if (gagnantId === nouveau) serie++; else serie = 0;
+
+    try { navigator.vibrate && navigator.vibrate(25); } catch {}
+    sons.clic(); sons.chute();
+    btnG.classList.add("gagne"); btnP.classList.add("perd");
+    btnG.insertAdjacentHTML("beforeend", `<span class="tampon ok">✓</span>`);
+    btnP.insertAdjacentHTML("beforeend", `<span class="tampon out">OUT</span>`);
+    [btnG, btnP].forEach(b => b.classList.add("bloque"));
+    const rc = btnG.getBoundingClientRect();
+    confettis(rc.left + rc.width / 2, rc.top + rc.height / 2, 18);
+
+    // commentaire
+    let r1 = phrase(g, p), r2 = "";
+    const nouveauN1 = gagnantId === nouveau && mid === 0;
+    const roiDefend = gagnantId !== nouveau && mid === 0 && e.trie.length > 2;
+    if (nouveauN1 && e.trie.length > 2) r1 = `👑 ${nomCourt(g)} prend le trône !`;
+    else if (roiDefend) r1 = `👑 ${nomCourt(g)} défend sa couronne`;
+    else if (serie >= 3) r1 = `🚀 ${nomCourt(g)} grimpe… ${serie} victoires d'affilée !`;
+
+    choisir(gagnantId, true);
+    const place = e.trie.indexOf(nouveau);
+    if (place >= 0 && serieDe === nouveau && !e.aPlacer.includes(nouveau)) {
+      r2 = `📍 ${nomCourt(PAR_ID[nouveau])} s'installe à la ${place + 1}${place ? "e" : "re"} place`;
+    }
+    reagir(r1, r2);
+
+    const pctApres = e.trie.length / JOUEURS.length;
+    const etape = [[.25, "Quart d'heure de jeu", "Tu tiens le rythme 💪"], [.5, "Mi-temps ! 🍊", "Les oranges sont servies. On repart ?"], [.75, "Dernier quart d'heure", "Le KOP Lescure pousse derrière toi 📣"]]
+      .find(([s]) => pctAvant < s && pctApres >= s);
+    const delai = calme ? 150 : 750;
+    if (nouveauN1 && e.trie.length > 3) setTimeout(() => { sons.fanfare(); pluieConfettis(); banniere("Nouveau n°1 👑", g.nom); }, 200);
+    if (etape) setTimeout(() => { sons.sifflet(etape[1].startsWith("Mi") ? 2 : 1); banniere(etape[1], etape[2]); confettis(innerWidth / 2, innerHeight / 2, 40, 1.4); }, nouveauN1 && e.trie.length > 3 ? 2100 : 200);
+
+    setTimeout(() => {
+      occupe = false;
+      if (!e.aPlacer.length) { sons.sifflet(3); setTimeout(sons.fanfare, 900); pluieConfettis(); banniere("Coup de sifflet final !", "Le KOP Lescure attend ton classement 🏆"); }
+      rendreDuel(true);
+    }, delai);
+  }
+
+  function choisir(gagnant, sansRendu) {
+    const e = etat;
+    const nouveau = e.aPlacer[0];
+    const mid = Math.floor((e.lo + e.hi) / 2);
+    e.histo.push({ trie: e.trie.slice(), aPlacer: e.aPlacer.slice(), lo: e.lo, hi: e.hi });
+    if (e.histo.length > 300) e.histo.shift();
+    // trie[0] = le meilleur. Si le nouveau gagne contre trie[mid], il est au-dessus.
+    if (gagnant === nouveau) e.hi = mid; else e.lo = mid + 1;
+    if (e.lo >= e.hi) {
+      e.trie.splice(e.lo, 0, nouveau);
+      e.aPlacer.shift();
+      e.lo = 0; e.hi = e.trie.length;
+    }
+    if (!e.aPlacer.length) {
+      classements[moi] = e.trie.slice();
+      store.set("classements", classements);
+    }
+    store.set(cleEtat(), e);
+    if (!sansRendu) rendreDuel();
+  }
+
+  function initiales(nom) {
+    return nom.split(/[\s-]+/).filter(Boolean).map(p => p[0]).slice(0, 2).join("").toUpperCase();
+  }
+  function carte(btn, autre, j, anime) {
+    const etaitLa = btn.dataset.id === j.id;
+    btn.className = "joueur";
+    btn.dataset.id = j.id;
+    btn.innerHTML = `<div class="avatar">${initiales(j.nom)}</div>
+      <div class="txt"><div class="nom">${j.nom}</div><div class="meta">${j.poste} · ${j.epoque}</div></div>`;
+    if (anime) { void btn.offsetWidth; btn.classList.add(etaitLa ? "reste" : "entre"); }
+    btn.onclick = () => clic(j.id, btn, autre);
+  }
+
+  function rendreDuel(anime) {
+    const e = etat;
+    const total = JOUEURS.length;
+    const places = e.trie.length;
+    $("qui-suis-je").textContent = "Joueur : " + moi;
+    if (!e.aPlacer.length) {
+      $("duel").classList.add("cache");
+      $("fini").classList.remove("cache");
+      $("prog").style.width = "100%";
+      $("prog-txt").textContent = `${total} joueurs classés.`;
+      $("annuler").disabled = !e.histo.length;
+      return;
+    }
+    $("duel").classList.remove("cache");
+    $("fini").classList.add("cache");
+    const mid = Math.floor((e.lo + e.hi) / 2);
+    const a = PAR_ID[e.aPlacer[0]], b = PAR_ID[e.trie[mid]];
+    // le challenger garde son côté tant qu'il n'est pas placé (côté tiré selon le joueur)
+    const gauche = e.aPlacer.length % 2 ? a : b, droite = gauche === a ? b : a;
+    carte($("jA"), $("jB"), gauche, anime); carte($("jB"), $("jA"), droite, anime);
+    const reste = estimationRestante(e);
+    $("prog").style.width = Math.round(100 * places / total) + "%";
+    $("prog-txt").textContent = `${places}/${total} joueurs placés · encore ~${reste} duels`;
+    $("annuler").disabled = !e.histo.length;
+  }
+
+  $("annuler").onclick = () => {
+    if (occupe) return;
+    const p = etat.histo.pop(); if (!p) return;
+    Object.assign(etat, p);
+    store.set(cleEtat(), etat);
+    serieDe = null;
+    reagir("↩︎ VAR : décision annulée 📺", "On rejoue l'action");
+    rendreDuel(true);
+  };
+  $("recommencer").onclick = () => {
+    if (!confirm("Effacer tes duels et recommencer à zéro ?")) return;
+    etat = nouvelEtat(); store.set(cleEtat(), etat); rendreDuel();
+  };
+
+  // ---------- partage par lien ----------
+  function encoder(nom, ids) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify({ n: nom, r: ids }))))
+      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function decoder(code) {
+    const b = code.replace(/-/g, "+").replace(/_/g, "/");
+    const o = JSON.parse(decodeURIComponent(escape(atob(b))));
+    if (!USERS.includes(o.n) || !Array.isArray(o.r)) throw new Error("lien invalide");
+    return { nom: o.n, ids: o.r.filter(id => PAR_ID[id]) };
+  }
+  function lienPartage() {
+    const base = location.href.split("#")[0];
+    return base + "#c=" + encoder(moi, classements[moi]);
+  }
+  function importer(texte) {
+    const m = String(texte).match(/#?c=([A-Za-z0-9_-]+)/);
+    if (!m) { toast("Lien pas reconnu 🤔"); return false; }
+    try {
+      const { nom, ids } = decoder(m[1]);
+      classements[nom] = ids;
+      store.set("classements", classements);
+      toast(`Classement de ${nom} ajouté ✅`);
+      return true;
+    } catch { toast("Lien abîmé 🤕"); return false; }
+  }
+  $("partager").onclick = async () => {
+    const url = lienPartage();
+    try {
+      if (navigator.share) { await navigator.share({ title: "KOP Lescure · mon classement", url }); return; }
+      await navigator.clipboard.writeText(url); toast("Lien copié 📋");
+    } catch { prompt("Copie ce lien :", url); }
+  };
+  $("importer").onclick = () => { if (importer($("coller").value)) { $("coller").value = ""; rendreCommun(); } };
+
+  // ---------- vues de classement ----------
+  function ligne(rang, j, droite, top) {
+    return `<li class="${top ? "top" : ""}"><span class="rang">${rang}</span>
+      <span class="lnom">${j.nom}<small>${j.poste} · ${j.epoque}</small></span>
+      <span class="score">${droite || ""}</span></li>`;
+  }
+  function rendreMoi() {
+    $("moi-titre").textContent = "Le classement de " + moi;
+    const c = classements[moi];
+    $("partager").disabled = !c;
+    $("moi-liste").innerHTML = c
+      ? c.map((id, i) => ligne(i + 1, PAR_ID[id], "", i < 3)).join("")
+      : `<li>Termine tes duels d'abord 😉</li>`;
+  }
+
+  // rang (1 = meilleur) de chaque joueur pour chaque personne
+  function rangs() {
+    const r = {};
+    for (const [nom, ids] of Object.entries(classements)) {
+      if (!USERS.includes(nom)) continue;
+      r[nom] = {}; ids.forEach((id, i) => r[nom][id] = i + 1);
+    }
+    return r;
+  }
+  function commun() {
+    const r = rangs(); const noms = Object.keys(r);
+    if (!noms.length) return { noms, liste: [] };
+    const liste = JOUEURS.map(j => {
+      const vals = noms.map(n => r[n][j.id]).filter(Boolean);
+      const moy = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
+      return { j, moy, vals: noms.map(n => r[n][j.id]) };
+    }).filter(x => x.vals.some(Boolean)).sort((a, b) => a.moy - b.moy);
+    return { noms, liste };
+  }
+  function rendreCommun() {
+    $("dispo").innerHTML = USERS.map(u => `<span class="chip ${classements[u] ? "ok" : ""}">${classements[u] ? "✓" : "…"} ${u}</span>`).join("");
+    const { noms, liste } = commun();
+    $("commun-liste").innerHTML = liste.length
+      ? liste.map((x, i) => ligne(i + 1, x.j, noms.map((n, k) => `${ABR[n] || n[0]}:${x.vals[k] ?? "–"}`).join(" · ") + `<br>moy. ${x.moy.toFixed(1)}`, i < 3)).join("")
+      : `<li>Personne n'a encore fini ses duels.</li>`;
+  }
+
+  // ---------- le vestiaire (stats fun) ----------
+  function spearman(a, b, ids) {
+    const n = ids.length; if (n < 2) return 0;
+    const d2 = ids.reduce((s, id) => s + (a[id] - b[id]) ** 2, 0);
+    return 1 - (6 * d2) / (n * (n * n - 1));
+  }
+  function rendreFun() {
+    const r = rangs(); const noms = Object.keys(r);
+    const out = [];
+    if (noms.length < 2) {
+      $("fun-contenu").innerHTML = `<div class="carte">Il faut au moins 2 classements pour ouvrir le vestiaire. Pour l'instant : ${noms.join(", ") || "personne"}.</div>`;
+      return;
+    }
+    const ids = JOUEURS.map(j => j.id).filter(id => noms.every(n => r[n][id]));
+    const N = ids.length;
+
+    // 1. Unanimité : le joueur que tout le monde met haut
+    const parMax = ids.map(id => ({ id, pire: Math.max(...noms.map(n => r[n][id])), ecart: Math.max(...noms.map(n => r[n][id])) - Math.min(...noms.map(n => r[n][id])) }));
+    const unan = parMax.slice().sort((a, b) => a.pire - b.pire)[0];
+    out.push(`<div class="carte"><h3>🤝 Le joueur qui met tout le monde d'accord</h3>
+      <div class="grand">${PAR_ID[unan.id].nom}</div>
+      <div class="petit">${noms.map(n => `${n} : ${r[n][unan.id]}e`).join(" · ")}</div></div>`);
+
+    // 2. La pomme de discorde
+    const disc = parMax.slice().sort((a, b) => b.ecart - a.ecart)[0];
+    out.push(`<div class="carte"><h3>🔥 La pomme de discorde</h3>
+      <div class="grand">${PAR_ID[disc.id].nom}</div>
+      <div class="petit">${noms.map(n => `${n} : ${r[n][disc.id]}e`).join(" · ")} — ${disc.ecart} places d'écart. Débat obligatoire à la prochaine bière.</div></div>`);
+
+    // 3. Chouchous : joueur que X classe beaucoup plus haut que la moyenne des autres
+    const chouchous = noms.map(n => {
+      const autres = noms.filter(m => m !== n);
+      const best = ids.map(id => ({ id, diff: autres.reduce((s, m) => s + r[m][id], 0) / autres.length - r[n][id] }))
+        .sort((a, b) => b.diff - a.diff)[0];
+      const pire = ids.map(id => ({ id, diff: r[n][id] - autres.reduce((s, m) => s + r[m][id], 0) / autres.length }))
+        .sort((a, b) => b.diff - a.diff)[0];
+      return `<li><b>${n}</b> — chouchou : <b>${PAR_ID[best.id].nom}</b> (+${best.diff.toFixed(0)} places vs les autres) · tête de turc : <b>${PAR_ID[pire.id].nom}</b></li>`;
+    });
+    out.push(`<div class="carte"><h3>❤️ Chouchous & têtes de turc</h3><ul style="margin:0;padding-left:18px;line-height:1.7">${chouchous.join("")}</ul></div>`);
+
+    // 4. Âmes sœurs : corrélation entre paires
+    const paires = [];
+    for (let i = 0; i < noms.length; i++) for (let k = i + 1; k < noms.length; k++)
+      paires.push({ a: noms[i], b: noms[k], rho: spearman(r[noms[i]], r[noms[k]], ids) });
+    paires.sort((x, y) => y.rho - x.rho);
+    out.push(`<div class="carte"><h3>💞 Compatibilité footballistique</h3>
+      ${paires.map(p => `<div style="margin:6px 0"><b>${p.a} × ${p.b}</b> : ${Math.round((p.rho + 1) * 50)} %
+        <div class="barre"><div style="width:${Math.round((p.rho + 1) * 50)}%"></div></div></div>`).join("")}
+      ${paires.length > 1 ? `<div class="petit">Les âmes sœurs : ${paires[0].a} & ${paires[0].b}. ${paires.at(-1).a} & ${paires.at(-1).b}, faudra en parler.</div>` : ""}</div>`);
+
+    // 5. Nostalgie : époque moyenne du top 10 de chacun
+    const anneeEpoque = j => { const m = j.epoque.match(/(\d{4})/g); return m ? m.map(Number).reduce((a, b) => a + b, 0) / m.length : 2000; };
+    const nost = noms.map(n => {
+      const top = classements[n].slice(0, 10).map(id => PAR_ID[id]).filter(Boolean);
+      const moy = top.reduce((s, j) => s + anneeEpoque(j), 0) / top.length;
+      return { n, moy };
+    }).sort((a, b) => a.moy - b.moy);
+    out.push(`<div class="carte"><h3>📼 Indice de nostalgie (époque moyenne du top 10)</h3>
+      ${nost.map(x => `<div><b>${x.n}</b> : ${Math.round(x.moy)}</div>`).join("")}
+      <div class="petit">${nost[0].n} vit encore au Parc Lescure. ${nost.at(-1).n} est team Matmut Atlantique.</div></div>`);
+
+    // 6. XI de légende commun
+    const { liste } = commun();
+    const besoin = { "Gardien": 1, "Défenseur": 4, "Milieu": 3, "Attaquant": 3 };
+    const xi = { "Gardien": [], "Défenseur": [], "Milieu": [], "Attaquant": [] };
+    for (const x of liste) { const p = x.j.poste; if (xi[p] && xi[p].length < besoin[p]) xi[p].push(x.j.nom); }
+    out.push(`<div class="carte"><h3>🏟️ Votre XI de légende (4-3-3)</h3>
+      ${["Attaquant", "Milieu", "Défenseur", "Gardien"].map(p => `<div style="text-align:center;margin:8px 0"><div class="petit">${p}s</div><b>${xi[p].join(" · ") || "—"}</b></div>`).join("")}</div>`);
+
+    $("fun-contenu").innerHTML = out.join("");
+  }
+
+  // ---------- navigation ----------
+  function vue(nom) {
+    for (const s of ["qui", "duel", "moi", "commun", "fun"]) $("v-" + s).classList.toggle("cache", s !== nom);
+    $("nav").classList.toggle("cache", nom === "qui");
+    document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("actif", b.dataset.vue === nom));
+    if (nom === "duel") rendreDuel();
+    if (nom === "moi") rendreMoi();
+    if (nom === "commun") rendreCommun();
+    if (nom === "fun") rendreFun();
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll("#nav button, [data-go]").forEach(b => b.onclick = () => vue(b.dataset.vue || b.dataset.go));
+
+  function choisirUser(u) {
+    moi = u; store.set("moi", u);
+    etat = store.get(cleEtat(), null) || nouvelEtat();
+    store.set(cleEtat(), etat);
+    vue(classements[moi] && !etat.aPlacer.length ? "moi" : "duel");
+  }
+  $("users").innerHTML = USERS.map(u => `<button class="user" data-u="${u}">${u}<small>${classements[u] ? "classement fait ✓" : "c'est moi"}</small></button>`).join("");
+  document.querySelectorAll(".user").forEach(b => b.onclick = () => choisirUser(b.dataset.u));
+
+  let toastT;
+  function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("on"), 2200); }
+
+  // ---------- démarrage ----------
+  let importe = false;
+  if (location.hash.includes("c=")) { importe = importer(location.hash); history.replaceState(null, "", location.pathname + location.search); }
+  if (moi && USERS.includes(moi)) {
+    etat = store.get(cleEtat(), null) || nouvelEtat();
+    vue(importe ? "commun" : (etat.aPlacer.length ? "duel" : "moi"));
+  } else vue("qui");
+
+  window.addEventListener("hashchange", () => {
+    if (location.hash.includes("c=") && importer(location.hash)) {
+      history.replaceState(null, "", location.pathname + location.search);
+      if (moi) vue("commun");
+    }
+  });
+
+  // petit lien discret pour changer d'utilisateur
+  $("qui-suis-je").style.cursor = "pointer";
+  $("qui-suis-je").title = "Changer d'utilisateur";
+  $("qui-suis-je").onclick = () => vue("qui");
+})();
+</script>
+</body>
+</html>
