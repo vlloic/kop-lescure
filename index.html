@@ -131,7 +131,20 @@
   @media (max-width: 520px) {
     .duel { grid-template-columns: 1fr; }
     .vs { text-align: center; }
-    .joueur { min-height: 150px; flex-direction: row; justify-content: flex-start; padding: 16px; }
+    .joueur { min-height: 0; height: clamp(96px, 20vh, 150px); flex-direction: row; justify-content: flex-start; padding: 12px 16px; gap: 14px; }
+    .avatar { width: 56px; height: 56px; font-size: 21px; flex: none; }
+    .nom { font-size: 18px; }
+    .vs { font-size: 18px; line-height: 1; }
+    .duel { gap: 6px; }
+    main { padding-top: 12px; }
+    body[data-vue="duel"] header { padding: 12px 16px 14px; }
+    body[data-vue="duel"] header .sous { display: none; }
+    body[data-vue="duel"] h1 { font-size: 22px; }
+    body[data-vue="duel"] nav { margin-top: 8px; }
+    body[data-vue="duel"] nav button { padding: 5px 11px; font-size: 12px; }
+    body[data-vue="duel"] h2 { font-size: 17px; margin: 0 0 6px; }
+    .reaction { min-height: 50px; }
+    .reaction .r1 { font-size: 17px; }
     .joueur .txt { text-align: left; }
     .joueur .nom, .joueur .meta { text-align: left; }
     .users { grid-template-columns: 1fr; }
@@ -601,6 +614,7 @@
 
   // ---------- navigation ----------
   function vue(nom) {
+    document.body.dataset.vue = nom;
     for (const s of ["qui", "duel", "moi", "commun", "fun"]) $("v-" + s).classList.toggle("cache", s !== nom);
     $("nav").classList.toggle("cache", nom === "qui");
     document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("actif", b.dataset.vue === nom));
