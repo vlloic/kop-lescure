@@ -46,5 +46,6 @@ const JOUEURS = [
   { id: "koscielny",  nom: "Laurent Koscielny",  poste: "Défenseur", epoque: "2019–2022" },
   { id: "hwang",      nom: "Hwang Ui-jo", court: "Hwang",        poste: "Attaquant", epoque: "2019–2022" },
   // Génération Ligue 2 (2022–2024)
+  { id: "barbet",     nom: "Yoann Barbet",       poste: "Défenseur", epoque: "années 2020" },
   { id: "mwanga",     nom: "Junior Mwanga",      poste: "Milieu",    epoque: "années 2020" },
 ];
