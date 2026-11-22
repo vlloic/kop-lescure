@@ -218,7 +218,7 @@
     <div class="carte"><ol class="classement" id="moi-liste"></ol></div>
     <div class="carte cache" id="ecartes-carte">
       <h3 style="font:700 16px Oswald,sans-serif;text-transform:uppercase;margin:0 0 6px">🤷 En tribune (écartés)</h3>
-      <p class="petit" style="margin-top:0">Pas classés. Touche un joueur pour le faire revenir sur le terrain.</p>
+      <p class="petit" style="margin-top:0">Pas classés (3 jokers max). Touche un joueur pour le faire revenir et récupérer ton joker.</p>
       <div class="chips" id="ecartes"></div>
     </div>
   </section>
@@ -264,6 +264,10 @@
   let moi = store.get("moi", null);
   // classements de tout le monde : { "Loïc": [ids...], ... }
   let classements = store.get("classements", {});
+  // retire les joueurs qui ne sont plus dans la liste
+  for (const n of Object.keys(classements)) classements[n] = classements[n].filter(id => PAR_ID[id]);
+  const MAX_PASSES = 3;
+  const passesRestantes = () => MAX_PASSES - ((etat && etat.ecartes) || []).length;
 
   // ---------- tri par duels (insertion binaire = peu de duels) ----------
   // état : { aPlacer: [ids], trie: [ids], lo, hi, histo: [] }
@@ -288,7 +292,7 @@
       if (!e.trie.length && e.aPlacer.length) e.trie.push(e.aPlacer.shift());
       e.lo = 0; e.hi = e.trie.length; e.histo = [];
       store.set(cleEtat(), e);
-      if (nouveaux.length) setTimeout(() => toast(`${nouveaux.length} nouveaux joueurs à placer ⚽️`), 600);
+      if (nouveaux.length) setTimeout(() => toast(nouveaux.length > 1 ? `${nouveaux.length} nouveaux joueurs à placer ⚽️` : `1 nouveau joueur à placer : ${PAR_ID[nouveaux[0]].nom} ⚽️`), 600);
     }
     return e;
   }
@@ -467,7 +471,7 @@
   }
   const TRIBUNE = ["{n} part en tribune 🤷", "{n} ? Connais pas 🤷", "{n} reste au vestiaire", "{n} : même pas sur la feuille de match", "Le KOP Lescure ne retient pas {n} 🤷"];
   function clicPasse(btn, autre) {
-    if (occupe) return; occupe = true;
+    if (occupe || passesRestantes() <= 0) return; occupe = true;
     const j = PAR_ID[btn.dataset.id];
     $("duel").classList.add("anim");
     sons.chute();
@@ -475,14 +479,15 @@
     btn.classList.add("perd", "bloque"); autre.classList.add("bloque");
     btn.insertAdjacentHTML("beforeend", `<span class="tampon tribune">🤷 TRIBUNE</span>`);
     ecarter(j.id);
-    reagir(hasard(TRIBUNE).replace("{n}", nomCourt(j)), "Écarté du classement · 1 joueur de moins à placer");
+    const pr = passesRestantes();
+    reagir(hasard(TRIBUNE).replace("{n}", nomCourt(j)), pr > 0 ? `Écarté · encore ${pr} joker${pr > 1 ? "s" : ""}` : "Écarté · plus de joker, faudra trancher 😈");
     setTimeout(() => { occupe = false; $("duel").classList.remove("anim"); rendreDuel(true); }, calme ? 150 : 650);
   }
   function rappeler(id) {
     const e = etat; e.ecartes = (e.ecartes || []).filter(x => x !== id);
     e.aPlacer.push(id); if (e.aPlacer.length === 1) { e.lo = 0; e.hi = e.trie.length; }
     store.set(cleEtat(), e);
-    toast(`${PAR_ID[id].nom} revient sur le terrain ⚽️`);
+    toast(`${PAR_ID[id].nom} revient sur le terrain ⚽️ (+1 joker)`);
     rendreMoi();
   }
 
@@ -521,6 +526,8 @@
     const gauche = e.aPlacer.length % 2 ? a : b, droite = gauche === a ? b : a;
     carte($("jA"), $("jB"), gauche, anime); carte($("jB"), $("jA"), droite, anime);
     $("pA").onclick = () => clicPasse($("jA"), $("jB")); $("pB").onclick = () => clicPasse($("jB"), $("jA"));
+    const pr = passesRestantes();
+    for (const id of ["pA", "pB"]) { $(id).textContent = `🤷 Je passe · ${Math.max(0, pr)}`; $(id).classList.toggle("cache", pr <= 0); }
     const reste = estimationRestante(e);
     $("prog").style.width = Math.round(100 * places / total) + "%";
     $("prog-txt").textContent = `${places}/${total} joueurs placés · encore ~${reste} duels` + (nbEc ? ` · ${nbEc} en tribune` : "");
