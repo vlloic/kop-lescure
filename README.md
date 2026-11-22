@@ -4,7 +4,7 @@ App fun pour classer nos joueurs préférés des Girondins (Loïc, Pierre, Patri
 
 👉 **https://vlloic.github.io/kop-lescure/**
 
-- **Duels** : joueur A ou joueur B, jusqu'à obtenir un classement complet (~185 duels pour 48 joueurs, sauvegardé au fur et à mesure).
+- **Duels** : joueur A ou joueur B, jusqu'à obtenir un classement complet (~185 duels pour 48 joueurs, sauvegardé au fur et à mesure). « 🤷 Je passe » écarte un joueur qu'on ne connaît pas (≈5 duels de moins).
 - **Partage** : chacun copie son lien et le poste dans le groupe KOP Lescure ; l'ouvrir ajoute son classement.
 - **Classement commun** : moyenne des rangs.
 - **Le vestiaire** : stats fun (pomme de discorde, chouchous, compatibilité, XI de légende…).

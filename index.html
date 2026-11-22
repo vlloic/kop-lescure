@@ -90,6 +90,15 @@
   .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--marine); color: var(--blanc); padding: 10px 18px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 10; }
   .toast.on { opacity: 1; }
   .cache { display: none !important; }
+  .slot { position: relative; display: flex; }
+  .slot .joueur { flex: 1; width: 100%; }
+  .passe { position: absolute; top: 8px; right: 8px; z-index: 4; background: rgba(255,255,255,.14); color: var(--blanc);
+    border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 4px 10px; font: 600 12px Inter, sans-serif; cursor: pointer; }
+  .passe:hover { background: rgba(255,255,255,.28); }
+  .duel.anim .passe { visibility: hidden; }
+  .chip.retour { cursor: pointer; }
+  .chip.retour:hover { border-color: var(--marine); }
+  .tampon.tribune { color: #fff; border-color: #fff; background: rgba(20,35,75,.85); font-size: 22px; }
   /* ---------- animations ---------- */
   .duel { position: relative; }
   .joueur { position: relative; overflow: hidden; }
@@ -181,9 +190,9 @@
     <div class="petit" id="prog-txt"></div>
     <div class="reaction" id="reaction"><div class="r1">Que le meilleur gagne ⚔️</div></div>
     <div class="duel" id="duel">
-      <button class="joueur" id="jA"></button>
+      <div class="slot"><button class="joueur" id="jA"></button><button class="passe" id="pA" title="Je ne le connais pas / je m'en fiche">🤷 Je passe</button></div>
       <div class="vs">VS</div>
-      <button class="joueur" id="jB"></button>
+      <div class="slot"><button class="joueur" id="jB"></button><button class="passe" id="pB" title="Je ne le connais pas / je m'en fiche">🤷 Je passe</button></div>
     </div>
     <div style="height:16px"></div>
     <div class="ligne">
@@ -207,6 +216,11 @@
       <p class="petit" style="margin-bottom:0">Colle ce lien dans le groupe KOP Lescure. Quand un pote l'ouvre, ton classement s'ajoute automatiquement chez lui.</p>
     </div>
     <div class="carte"><ol class="classement" id="moi-liste"></ol></div>
+    <div class="carte cache" id="ecartes-carte">
+      <h3 style="font:700 16px Oswald,sans-serif;text-transform:uppercase;margin:0 0 6px">🤷 En tribune (écartés)</h3>
+      <p class="petit" style="margin-top:0">Pas classés. Touche un joueur pour le faire revenir sur le terrain.</p>
+      <div class="chips" id="ecartes"></div>
+    </div>
   </section>
 
   <!-- Commun -->
@@ -256,7 +270,7 @@
   function nouvelEtat() {
     const ids = JOUEURS.map(j => j.id);
     for (let i = ids.length - 1; i > 0; i--) { const r = Math.floor(Math.random() * (i + 1)); [ids[i], ids[r]] = [ids[r], ids[i]]; }
-    return { trie: [ids[0]], aPlacer: ids.slice(1), lo: 0, hi: 1, histo: [] };
+    return { trie: [ids[0]], aPlacer: ids.slice(1), lo: 0, hi: 1, histo: [], ecartes: [] };
   }
   const cleEtat = () => "etat:" + moi;
   // reprend la partie sauvegardée et l'adapte si la liste des joueurs a changé
@@ -264,9 +278,10 @@
     const e = store.get(cleEtat(), null);
     if (!e) return nouvelEtat();
     const existe = id => PAR_ID[id];
+    e.ecartes = (e.ecartes || []).filter(existe);
     const avant = e.trie.length + e.aPlacer.length;
     e.trie = e.trie.filter(existe); e.aPlacer = e.aPlacer.filter(existe);
-    const connus = new Set([...e.trie, ...e.aPlacer]);
+    const connus = new Set([...e.trie, ...e.aPlacer, ...e.ecartes]);
     const nouveaux = JOUEURS.map(j => j.id).filter(id => !connus.has(id));
     if (nouveaux.length || e.trie.length + e.aPlacer.length !== avant) {
       e.aPlacer.push(...nouveaux.sort(() => Math.random() - .5));
@@ -281,10 +296,10 @@
 
   function estimationRestante(e) {
     // duels restants ≈ duels pour le joueur en cours + log2 pour les suivants
-    let n = Math.ceil(Math.log2(Math.max(1, e.hi - e.lo + 1)));
+    let n = Math.log2(Math.max(2, e.hi - e.lo + 1));
     let taille = e.trie.length + 1;
-    for (let i = 1; i < e.aPlacer.length; i++, taille++) n += Math.ceil(Math.log2(taille + 1));
-    return n;
+    for (let i = 1; i < e.aPlacer.length; i++, taille++) n += Math.log2(taille + 1);
+    return Math.round(n);
   }
 
   // ---------- le fun : sons, confettis, commentaires ----------
@@ -362,10 +377,11 @@
   let occupe = false, serie = 0, serieDe = null;
   function clic(gagnantId, btnG, btnP) {
     if (occupe) return; occupe = true;
+    $("duel").classList.add("anim");
     const e = etat, nouveau = e.aPlacer[0];
     const mid = Math.floor((e.lo + e.hi) / 2);
     const g = PAR_ID[gagnantId], p = PAR_ID[gagnantId === nouveau ? e.trie[mid] : nouveau];
-    const pctAvant = e.trie.length / JOUEURS.length;
+    const pctAvant = e.trie.length / (JOUEURS.length - (e.ecartes || []).length);
     if (serieDe !== nouveau) { serie = 0; serieDe = nouveau; }
     if (gagnantId === nouveau) serie++; else serie = 0;
 
@@ -393,7 +409,7 @@
     }
     reagir(r1, r2);
 
-    const pctApres = e.trie.length / JOUEURS.length;
+    const pctApres = e.trie.length / (JOUEURS.length - (e.ecartes || []).length);
     const etape = [[.25, "Quart d'heure de jeu", "Tu tiens le rythme 💪"], [.5, "Mi-temps ! 🍊", "Les oranges sont servies. On repart ?"], [.75, "Dernier quart d'heure", "Le KOP Lescure pousse derrière toi 📣"]]
       .find(([s]) => pctAvant < s && pctApres >= s);
     const delai = calme ? 150 : 750;
@@ -401,7 +417,7 @@
     if (etape) setTimeout(() => { sons.sifflet(etape[1].startsWith("Mi") ? 2 : 1); banniere(etape[1], etape[2]); confettis(innerWidth / 2, innerHeight / 2, 40, 1.4); }, nouveauN1 && e.trie.length > 3 ? 2100 : 200);
 
     setTimeout(() => {
-      occupe = false;
+      occupe = false; $("duel").classList.remove("anim");
       if (!e.aPlacer.length) { sons.sifflet(3); setTimeout(sons.fanfare, 900); pluieConfettis(); banniere("Coup de sifflet final !", "Le KOP Lescure attend ton classement 🏆"); }
       rendreDuel(true);
     }, delai);
@@ -411,8 +427,7 @@
     const e = etat;
     const nouveau = e.aPlacer[0];
     const mid = Math.floor((e.lo + e.hi) / 2);
-    e.histo.push({ trie: e.trie.slice(), aPlacer: e.aPlacer.slice(), lo: e.lo, hi: e.hi });
-    if (e.histo.length > 300) e.histo.shift();
+    sauver(e);
     // trie[0] = le meilleur. Si le nouveau gagne contre trie[mid], il est au-dessus.
     if (gagnant === nouveau) e.hi = mid; else e.lo = mid + 1;
     if (e.lo >= e.hi) {
@@ -420,12 +435,55 @@
       e.aPlacer.shift();
       e.lo = 0; e.hi = e.trie.length;
     }
+    finir(e);
+    if (!sansRendu) rendreDuel();
+  }
+  function sauver(e) {
+    e.histo.push({ trie: e.trie.slice(), aPlacer: e.aPlacer.slice(), lo: e.lo, hi: e.hi, ecartes: (e.ecartes || []).slice() });
+    if (e.histo.length > 300) e.histo.shift();
+  }
+  function finir(e) {
     if (!e.aPlacer.length) {
       classements[moi] = e.trie.slice();
       store.set("classements", classements);
     }
     store.set(cleEtat(), e);
-    if (!sansRendu) rendreDuel();
+  }
+  // écarter un joueur du duel (pas classé du tout)
+  function ecarter(id) {
+    const e = etat; e.ecartes = e.ecartes || [];
+    sauver(e);
+    if (e.aPlacer[0] === id) {
+      e.aPlacer.shift(); e.lo = 0; e.hi = e.trie.length;
+    } else {
+      const i = e.trie.indexOf(id);
+      e.trie.splice(i, 1);
+      e.hi = Math.max(e.lo, e.hi - 1);
+      if (e.lo >= e.hi && e.aPlacer.length) { e.trie.splice(e.lo, 0, e.aPlacer.shift()); e.lo = 0; e.hi = e.trie.length; }
+    }
+    if (!e.trie.length && e.aPlacer.length) { e.trie.push(e.aPlacer.shift()); e.lo = 0; e.hi = 1; }
+    e.ecartes.push(id);
+    finir(e);
+  }
+  const TRIBUNE = ["{n} part en tribune 🤷", "{n} ? Connais pas 🤷", "{n} reste au vestiaire", "{n} : même pas sur la feuille de match", "Le KOP Lescure ne retient pas {n} 🤷"];
+  function clicPasse(btn, autre) {
+    if (occupe) return; occupe = true;
+    const j = PAR_ID[btn.dataset.id];
+    $("duel").classList.add("anim");
+    sons.chute();
+    try { navigator.vibrate && navigator.vibrate(15); } catch {}
+    btn.classList.add("perd", "bloque"); autre.classList.add("bloque");
+    btn.insertAdjacentHTML("beforeend", `<span class="tampon tribune">🤷 TRIBUNE</span>`);
+    ecarter(j.id);
+    reagir(hasard(TRIBUNE).replace("{n}", nomCourt(j)), "Écarté du classement · 1 joueur de moins à placer");
+    setTimeout(() => { occupe = false; $("duel").classList.remove("anim"); rendreDuel(true); }, calme ? 150 : 650);
+  }
+  function rappeler(id) {
+    const e = etat; e.ecartes = (e.ecartes || []).filter(x => x !== id);
+    e.aPlacer.push(id); if (e.aPlacer.length === 1) { e.lo = 0; e.hi = e.trie.length; }
+    store.set(cleEtat(), e);
+    toast(`${PAR_ID[id].nom} revient sur le terrain ⚽️`);
+    rendreMoi();
   }
 
   function initiales(nom) {
@@ -443,14 +501,15 @@
 
   function rendreDuel(anime) {
     const e = etat;
-    const total = JOUEURS.length;
+    const nbEc = (e.ecartes || []).length;
+    const total = JOUEURS.length - nbEc;
     const places = e.trie.length;
     $("qui-suis-je").textContent = "Joueur : " + moi;
     if (!e.aPlacer.length) {
       $("duel").classList.add("cache");
       $("fini").classList.remove("cache");
       $("prog").style.width = "100%";
-      $("prog-txt").textContent = `${total} joueurs classés.`;
+      $("prog-txt").textContent = `${total} joueurs classés` + (nbEc ? ` · ${nbEc} en tribune` : "") + ".";
       $("annuler").disabled = !e.histo.length;
       return;
     }
@@ -461,9 +520,10 @@
     // le challenger garde son côté tant qu'il n'est pas placé (côté tiré selon le joueur)
     const gauche = e.aPlacer.length % 2 ? a : b, droite = gauche === a ? b : a;
     carte($("jA"), $("jB"), gauche, anime); carte($("jB"), $("jA"), droite, anime);
+    $("pA").onclick = () => clicPasse($("jA"), $("jB")); $("pB").onclick = () => clicPasse($("jB"), $("jA"));
     const reste = estimationRestante(e);
     $("prog").style.width = Math.round(100 * places / total) + "%";
-    $("prog-txt").textContent = `${places}/${total} joueurs placés · encore ~${reste} duels`;
+    $("prog-txt").textContent = `${places}/${total} joueurs placés · encore ~${reste} duels` + (nbEc ? ` · ${nbEc} en tribune` : "");
     $("annuler").disabled = !e.histo.length;
   }
 
@@ -529,6 +589,10 @@
     $("moi-liste").innerHTML = c
       ? c.map((id, i) => ligne(i + 1, PAR_ID[id], "", i < 3)).join("")
       : `<li>Termine tes duels d'abord 😉</li>`;
+    const ec = (etat && etat.ecartes) || [];
+    $("ecartes-carte").classList.toggle("cache", !ec.length);
+    $("ecartes").innerHTML = ec.map(id => `<span class="chip retour" data-id="${id}">↩︎ ${PAR_ID[id].nom}</span>`).join("");
+    document.querySelectorAll("#ecartes .retour").forEach(c => c.onclick = () => rappeler(c.dataset.id));
   }
 
   // rang (1 = meilleur) de chaque joueur pour chaque personne
@@ -543,9 +607,10 @@
   function commun() {
     const r = rangs(); const noms = Object.keys(r);
     if (!noms.length) return { noms, liste: [] };
+    // un joueur écarté par quelqu'un compte comme classé juste après son dernier
     const liste = JOUEURS.map(j => {
-      const vals = noms.map(n => r[n][j.id]).filter(Boolean);
-      const moy = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
+      const vals = noms.map(n => r[n][j.id] || classements[n].length + 1);
+      const moy = vals.reduce((a, b) => a + b, 0) / vals.length;
       return { j, moy, vals: noms.map(n => r[n][j.id]) };
     }).filter(x => x.vals.some(Boolean)).sort((a, b) => a.moy - b.moy);
     return { noms, liste };
@@ -561,7 +626,9 @@
   // ---------- le vestiaire (stats fun) ----------
   function spearman(a, b, ids) {
     const n = ids.length; if (n < 2) return 0;
-    const d2 = ids.reduce((s, id) => s + (a[id] - b[id]) ** 2, 0);
+    const rel = r => Object.fromEntries(ids.slice().sort((x, y) => r[x] - r[y]).map((id, i) => [id, i + 1]));
+    const ra = rel(a), rb = rel(b);
+    const d2 = ids.reduce((s, id) => s + (ra[id] - rb[id]) ** 2, 0);
     return 1 - (6 * d2) / (n * (n * n - 1));
   }
   function rendreFun() {
